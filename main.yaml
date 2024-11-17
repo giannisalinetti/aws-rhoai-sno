@@ -1,0 +1,5 @@
+---
+- name: Install Playbook
+  ansible.builtin.import_playbook: install.yaml
+- name: Post Install Playbook
+  ansible.builtin.import_playbook: post_install.yaml

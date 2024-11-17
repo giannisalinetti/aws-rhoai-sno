@@ -1,0 +1,15 @@
+---
+cluster_name: sno
+
+master_flavor: g4dn.metal
+aws_region: us-east-2
+service_network: 172.30.0.0/16
+fips_enabled: false
+
+pull_secret: ""
+ssh_key: ""
+aws_access_key_id: ""
+aws_secret_access_key: ""  
+
+install_dir: ~/opentlc/sandbox
+installer_path: /usr/local/bin

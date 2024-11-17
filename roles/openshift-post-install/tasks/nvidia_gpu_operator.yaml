@@ -1,0 +1,63 @@
+---
+- name: Create Nvidia GPU Operator namespace
+  kubernetes.core.k8s:
+    kubeconfig: "{{ install_dir }}/auth/kubeconfig"
+    host: "https://api.{{ cluster_name }}.{{ sanitized_base_domain }}:6443"
+    state: present
+    definition: "{{ lookup('template', 'nvidia_gpu_operator_namespace.yaml.j2') | from_yaml }}"
+    wait_sleep: 10
+    wait_timeout: 360
+
+- name: Create Nvidia GPU Operator OperatorGroup
+  kubernetes.core.k8s:
+    kubeconfig: "{{ install_dir }}/auth/kubeconfig"
+    host: "https://api.{{ cluster_name }}.{{ sanitized_base_domain }}:6443"
+    state: present
+    definition: "{{ lookup('template', 'nvidia_gpu_operator_operatorgroup.yaml.j2') | from_yaml }}"
+    wait_sleep: 10
+    wait_timeout: 360
+
+- name: Create Nvidia GPU Operator Operator Subscription
+  kubernetes.core.k8s:
+    kubeconfig: "{{ install_dir }}/auth/kubeconfig"
+    host: "https://api.{{ cluster_name }}.{{ sanitized_base_domain }}:6443"
+    state: present
+    definition: "{{ lookup('template', 'nvidia_gpu_operator_subscription.yaml.j2') | from_yaml }}"
+    wait_sleep: 10
+    wait_timeout: 360
+
+- name: Wait for NFS Instance CRD
+  kubernetes.core.k8s_info:
+    kubeconfig: "{{ install_dir }}/auth/kubeconfig"
+    host: "https://api.{{ cluster_name }}.{{ sanitized_base_domain }}:6443"
+    kind: CustomResourceDefinition
+    api_version: apiextensions.k8s.io/v1
+    name: clusterpolicies.nvidia.com
+  register: nvidia_clusterpolicy_crd
+  until: 
+    - nvidia_clusterpolicy_crd.resources | length > 0
+  retries: 60
+  delay: 10
+
+- name: Create GPU Cluster Policy 
+  kubernetes.core.k8s:
+    kubeconfig: "{{ install_dir }}/auth/kubeconfig"
+    host: "https://api.{{ cluster_name }}.{{ sanitized_base_domain }}:6443"
+    state: present
+    definition: "{{ lookup('template', 'nvidia_cluster_policy.yaml.j2') | from_yaml }}"
+    wait_sleep: 10
+    wait_timeout: 360
+
+- name: Wait for GPU Cluster Policy Readiness
+  kubernetes.core.k8s_info:
+    kubeconfig: "{{ install_dir }}/auth/kubeconfig"
+    host: "https://api.{{ cluster_name }}.{{ sanitized_base_domain }}:6443"
+    kind: ClusterPolicy
+    api_version: nvidia.com/v1
+    name: "gpu-cluster-policy"
+    namespace: nvidia-gpu-operator
+  register: cluster_policy_status
+  until: cluster_policy_status.resources | json_query('[*].status.conditions[?type==`Ready`].status') | flatten | first | bool
+  retries: 60
+  delay: 10
+

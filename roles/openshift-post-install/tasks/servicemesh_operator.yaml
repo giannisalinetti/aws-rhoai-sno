@@ -1,0 +1,18 @@
+---
+- name: Create Service Mesh Operator Subscription
+  kubernetes.core.k8s:
+    kubeconfig: "{{ install_dir }}/auth/kubeconfig"
+    host: "https://api.{{ cluster_name }}.{{ sanitized_base_domain }}:6443"
+    state: present
+    definition: "{{ lookup('template', 'servicemesh_operator_subscription.yaml.j2') | from_yaml }}"
+    wait_sleep: 10
+    wait_timeout: 360
+
+- name: Create istio-system namespace
+  kubernetes.core.k8s:
+    kubeconfig: "{{ install_dir }}/auth/kubeconfig"
+    host: "https://api.{{ cluster_name }}.{{ sanitized_base_domain }}:6443"
+    state: present
+    definition: "{{ lookup('template', 'istio_namespace.yaml.j2') | from_yaml }}"
+    wait_sleep: 10
+    wait_timeout: 360

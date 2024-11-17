@@ -1,0 +1,18 @@
+---
+- name: RHOAI SNO Post Install Provisioning
+  hosts: localhost
+  gather_facts: true
+  vars_files:
+    - cluster_config_vars.yaml
+    - user_info.yaml
+  tasks:
+    - name: Sanitize base domain
+      ansible.builtin.set_fact:
+        sanitized_base_domain: "{{ base_domain | regex_replace('^\\.(.*)', '\\1') }}"
+    
+    - name: Import post install role
+      ansible.builtin.import_role:
+        name: openshift-post-install
+      tags:
+      - post_install
+

@@ -1,0 +1,66 @@
+---
+- name: Ensure AWS config dir exists
+  ansible.builtin.file:
+    state: directory
+    path: ~/.aws
+
+- name: Create AWS credentials file
+  ansible.builtin.template:
+    src: templates/aws_credentials.j2
+    dest: ~/.aws/credentials
+    mode: 0664
+    backup: yes
+
+- name: Create installation directory
+  ansible.builtin.file:
+    state: directory
+    path: "{{ install_dir }}"
+
+- name: Template out install-config.yaml file
+  ansible.builtin.template:
+    src: templates/install-config.yaml.j2
+    dest: "{{ install_dir }}/install-config.yaml"
+
+- name: Set platform facts for Mac OS
+  ansible.builtin.set_fact:
+    platform: mac
+  when: ansible_facts['distribution'] == 'MacOSX'
+
+- name: Set platform facts for Linux
+  ansible.builtin.set_fact:
+    platform: linux
+  when: ansible_facts['system'] == 'Linux'
+
+- name: Install GNU Tar on Mac OS
+  community.general.homebrew:
+    name: gnu-tar
+    state: latest
+  when: ansible_facts['distribution'] == 'MacOSX'
+
+- name: Unarchive openshift-install binary
+  ansible.builtin.unarchive:
+    src: "https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/latest/openshift-install-{{ platform }}.tar.gz"
+    dest: "{{ installer_path }}"
+    remote_src: yes
+  become: true
+
+- name: Unarchive openshift client binary
+  ansible.builtin.unarchive:
+    src: "https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/latest/openshift-client-{{ platform }}.tar.gz"
+    dest: "{{ installer_path }}"
+    remote_src: yes
+  become: true
+
+- name: Run openshift-install
+  ansible.builtin.command: "{{ installer_path }}/openshift-install create cluster --dir {{ install_dir }}"
+  async: 3600
+  poll: 0
+  register: install_sleeper
+
+- name: Check cluster installation completion
+  ansible.builtin.async_status:
+    jid: "{{ install_sleeper.ansible_job_id }}"
+  register: job_result
+  until: job_result.finished
+  retries: 120
+  delay: 30

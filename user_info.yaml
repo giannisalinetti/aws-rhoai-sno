@@ -1,0 +1,23 @@
+---
+# The cluster base domain notified by e-mail
+base_domain: YOUR BASE DOMAIN HERE
+
+# The generated AWS access key notified by e-mail
+aws_access_key_id: YOUR AWS ACCESS KEY HERE
+
+# The generated AWS secret access key notified by e-mail
+aws_secret_access_key: YOUR AWS SECRET ACCESS KEY HERE
+
+# The Red Hat pull secret. You can get you pull secret here:
+# https://cloud.redhat.com/openshift/install/aws/installer-provisioned
+  # IMPORTANT! Remember to quote the pull secret inside 'single quotes' to 
+# handle it correctly as a string or Ansible will treat it as an internal dictionary,
+# causing parsing errors in the final install-config file.
+# Example: '{"auths": {"cloud.openshift.com":... }}}'
+pull_secret: YOUR PULL SECRET HERE
+
+# The public SSH key that will injected in the nodes
+ssh_key: YOUR SSH PUBLIC KEY HERE
+
+# The local directory used during the installation to create config and log files.
+install_dir: YOUR INSTALL DIR HERE

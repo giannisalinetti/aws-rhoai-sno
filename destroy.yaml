@@ -1,0 +1,23 @@
+---
+- name: Destroy OpenShift 4 cluster on OpenTLC
+  hosts: localhost
+  gather_facts: true
+  vars_files:
+    - cluster_config_vars.yaml
+    - user_info.yaml
+  tasks:
+    - name: Fail when install_dir variable is empty
+      ansible.builtin.fail:
+        msg: Missing install dir variable
+      when: install_dir is undefined or install_dir == ""
+
+    - name: Import provisioning role
+      ansible.builtin.import_role:
+        name: openshift-sandbox-ipi
+        tasks_from: destroy
+
+    - name: Display destroy results
+      ansible.builtin.debug:
+        msg: |
+          Destroy complete!
+          The full installation log is available on '{{ install_dir }}/.openshift_install.log'

@@ -1,0 +1,6 @@
+---
+## Post Install Configs
+# HTPasswd Users. Change passwords before installing.
+htpasswd_users:
+  developer1: RedHat123!
+  developer2: RedHat123!

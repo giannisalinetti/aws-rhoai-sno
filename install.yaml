@@ -1,0 +1,57 @@
+---
+- name: RHOAI SNO Installation
+  hosts: localhost
+  gather_facts: true
+  vars_files:
+    - cluster_config_vars.yaml
+    - user_info.yaml
+  
+  tasks:
+    - name: Fail when base_domain variable is empty
+      ansible.builtin.fail:
+        msg: Missing pull secret variable
+      when: base_domain is undefined or base_domain == ""
+
+    - name: Fail when pull_secret variable is empty
+      ansible.builtin.fail:
+        msg: Missing pull secret variable
+      when: pull_secret is undefined or pull_secret == ""
+
+    - name: Fail when aws_access_key_id variable is empty
+      ansible.builtin.fail:
+        msg: Missing AWS access key id variable
+      when: aws_access_key_id is undefined or aws_access_key_id == ""
+
+    - name: Fail when aws_secret_access_key variable is empty
+      ansible.builtin.fail:
+        msg: Missing AWS secret access key variable
+      when: aws_secret_access_key is undefined or  aws_secret_access_key == ""
+
+    - name: Fail when ssh_key variable is empty
+      ansible.builtin.fail:
+        msg: Missing SSH public key variable
+      when: ssh_key is undefined or ssh_key == ""
+
+    - name: Fail when install_dir variable is empty
+      ansible.builtin.fail:
+        msg: Missing install dir variable
+      when: install_dir is undefined or install_dir == ""
+
+    - name: Sanitize base domain
+      ansible.builtin.set_fact:
+        sanitized_base_domain: "{{ base_domain | regex_replace('^\\.(.*)', '\\1') }}"
+
+    - name: Import provisioning role
+      ansible.builtin.import_role:
+        name: openshift-sandbox-ipi
+      tags:
+      - install
+    
+    - name: Display installation results
+      ansible.builtin.debug:
+        msg: |
+          Install complete!
+          The full installation log is available on '{{ install_dir }}/.openshift_install.log'
+          To access the cluster as the system:admin user when using 'oc', run 'export KUBECONFIG={{ install_dir }}/auth/kubeconfig'
+          Access the OpenShift web-console here: https://console-openshift-console.apps.{{ cluster_name }}.{{ sanitized_base_domain }}
+          Login to the console with user 'kubeadmin' and password {{ lookup('file', '{{ install_dir }}/auth/kubeadmin-password') }}

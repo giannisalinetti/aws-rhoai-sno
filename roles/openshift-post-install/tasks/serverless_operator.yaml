@@ -1,0 +1,27 @@
+---
+- name: Create openshift-serverless namespace
+  kubernetes.core.k8s:
+    kubeconfig: "{{ install_dir }}/auth/kubeconfig"
+    host: "https://api.{{ cluster_name }}.{{ sanitized_base_domain }}:6443"
+    state: present
+    definition: "{{ lookup('template', 'serverless_operator_namespace.yaml.j2') | from_yaml }}"
+    wait_sleep: 10
+    wait_timeout: 360
+
+- name: Create Serverless OperatorGroup
+  kubernetes.core.k8s:
+    kubeconfig: "{{ install_dir }}/auth/kubeconfig"
+    host: "https://api.{{ cluster_name }}.{{ sanitized_base_domain }}:6443"
+    state: present
+    definition: "{{ lookup('template', 'serverless_operator_operatorgroup.yaml.j2') | from_yaml }}"
+    wait_sleep: 10
+    wait_timeout: 360
+
+- name: Create Serverless Operator Subscription
+  kubernetes.core.k8s:
+    kubeconfig: "{{ install_dir }}/auth/kubeconfig"
+    host: "https://api.{{ cluster_name }}.{{ sanitized_base_domain }}:6443"
+    state: present
+    definition: "{{ lookup('template', 'serverless_operator_subscription.yaml.j2') | from_yaml }}"
+    wait_sleep: 10
+    wait_timeout: 360

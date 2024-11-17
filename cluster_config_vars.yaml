@@ -1,0 +1,22 @@
+---
+# Cluster name
+cluster_name: sno
+
+# Sizing of master nodes
+master_flavor: g4dn.metal
+
+# AWS install region
+aws_region: us-east-2
+
+# The service network used top allocate service vips. To test Submariner 
+# multicluster connectivity be sure to use diffrenet CIDRs.
+service_network: 172.30.0.0/16
+
+# Enable FIPS mode
+fips_enabled: false
+
+## Post Install Configs
+# HTPasswd Users. Change passwords before installing.
+htpasswd_users:
+  developer1: RedHat123!
+  developer2: RedHat123!

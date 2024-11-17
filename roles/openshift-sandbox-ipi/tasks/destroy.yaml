@@ -1,0 +1,14 @@
+---
+- name: Destroy cluster
+  ansible.builtin.command: "{{ installer_path }}/openshift-install destroy cluster --dir {{ install_dir }}"
+  async: 3600
+  poll: 0
+  register: destroy_sleeper
+
+- name: Check cluster destroy completion
+  ansible.builtin.async_status:
+    jid: "{{ destroy_sleeper.ansible_job_id }}"
+  register: job_result
+  until: job_result.finished
+  retries: 120
+  delay: 30

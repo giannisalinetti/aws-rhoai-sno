@@ -1,0 +1,38 @@
+---
+- name: Generate the HTPasswd file
+  community.general.htpasswd:
+    path: /tmp/ocp-htpasswd
+    name: "{{ item.key }}"
+    password: "{{ item.value }}"
+    state: present
+  loop: "{{ htpasswd_users | dict2items }}"
+  no_log: true
+
+- name: Create the HTPasswd secret
+  kubernetes.core.k8s:
+    kubeconfig: "{{ install_dir }}/auth/kubeconfig"
+    host: "https://api.{{ cluster_name }}.{{ sanitized_base_domain }}:6443"
+    state: present
+    definition: "{{ lookup('template', 'htpasswd_secret.yaml.j2') | from_yaml }}"
+
+- name: Create the HTPasswd OAuth CR
+  kubernetes.core.k8s:
+    kubeconfig: "{{ install_dir }}/auth/kubeconfig"
+    host: "https://api.{{ cluster_name }}.{{ sanitized_base_domain }}:6443"
+    state: present
+    definition: "{{ lookup('template', 'htpasswd_oauth.yaml.j2') | from_yaml }}"
+
+- name: Configure Node Feature Discovery Operator
+  ansible.builtin.include_tasks: nfd_operator.yaml
+
+- name: Configure Nvidia GPU Operator
+  ansible.builtin.include_tasks: nvidia_gpu_operator.yaml
+
+- name: Configure Serverless Operator
+  ansible.builtin.include_tasks: serverless_operator.yaml
+
+- name: Configure Service Mesh Operator
+  ansible.builtin.include_tasks: servicemesh_operator.yaml
+
+- name: Configure Red Hat OpenShift AI
+  ansible.builtin.include_tasks: rhods_operator.yaml
