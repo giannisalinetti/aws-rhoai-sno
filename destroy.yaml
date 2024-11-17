@@ -1,10 +1,11 @@
 ---
-- name: Destroy OpenShift 4 cluster on OpenTLC
+- name: Destroy SNO Cluster
   hosts: localhost
   gather_facts: true
   vars_files:
     - cluster_config_vars.yaml
     - user_info.yaml
+
   tasks:
     - name: Fail when install_dir variable is empty
       ansible.builtin.fail:
